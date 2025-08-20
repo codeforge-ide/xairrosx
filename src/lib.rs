@@ -4,12 +4,20 @@
 #![test_runner(crate::test_runner)]
 #![reexport_test_harness_main = "test_main"]
 #![feature(abi_x86_interrupt)]
+#![feature(alloc_error_handler)]
+#![feature(const_mut_refs)]
+#![feature(naked_functions)]
+
+extern crate alloc;
 
 pub mod serial;
 pub mod vga_buffer;
 pub mod interrupts;
 pub mod gdt;
 pub mod memory;
+pub mod task;
+pub mod fs;
+pub mod syscall;
 
 use core::panic::PanicInfo;
 use bootloader::BootInfo;
@@ -29,6 +37,9 @@ pub fn init(boot_info: &'static BootInfo) {
     };
     memory::init_heap(&mut mapper, &mut frame_allocator)
         .expect("heap initialization failed");
+
+    fs::init();
+    syscall::init();
 }
 
 pub fn hlt_loop() -> ! {
@@ -41,4 +52,9 @@ pub fn hlt_loop() -> ! {
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
     hlt_loop();
+}
+
+#[alloc_error_handler]
+fn alloc_error_handler(layout: alloc::alloc::Layout) -> ! {
+    panic!("allocation error: {:?}", layout)
 }

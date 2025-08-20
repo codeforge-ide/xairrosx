@@ -1,17 +1,25 @@
 #![no_std]
 #![no_main]
 
-use app::{println, init, hlt_loop};
+extern crate alloc;
+
+use app::{init, println, hlt_loop};
+use bootloader::{entry_point, BootInfo};
 use core::panic::PanicInfo;
-use bootloader::{BootInfo, entry_point};
+use app::task::Executor;
+use app::task::keyboard;
+use alloc::boxed::Box;
+
 
 entry_point!(kernel_main);
 
 fn kernel_main(boot_info: &'static BootInfo) -> ! {
     println!("xairorosx");
     init(boot_info);
-    println!("It did not crash!");
-    hlt_loop();
+
+    let mut executor = Executor::new();
+    executor.spawn(Box::pin(keyboard::print_keypresses()));
+    executor.run();
 }
 
 #[panic_handler]

@@ -78,5 +78,5 @@ extern "x86-interrupt" fn keyboard_interrupt_handler(
 
     let mut port = Port::new(0x60);
     let scancode: u8 = unsafe { port.read() };
-    crate::serial_println!("scancode: {}", scancode);
+    crate::task::keyboard::add_scancode(scancode);
 }
