@@ -1,15 +1,21 @@
 #![no_std]
 #![no_main]
 
+use app::{println, init, hlt_loop};
 use core::panic::PanicInfo;
+use bootloader::{BootInfo, entry_point};
 
-/// This function is called on panic.
-#[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
-    loop {}
+entry_point!(kernel_main);
+
+fn kernel_main(boot_info: &'static BootInfo) -> ! {
+    println!("xairorosx");
+    init(boot_info);
+    println!("It did not crash!");
+    hlt_loop();
 }
 
-#[no_mangle]
-pub extern "C" fn _start() -> ! {
-    loop {}
+#[panic_handler]
+fn panic(info: &PanicInfo) -> ! {
+    println!("{}", info);
+    hlt_loop();
 }
